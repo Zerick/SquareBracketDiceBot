@@ -1,5 +1,6 @@
 # Secret stuff
 config.py
+whitelist.py
 
 # Environments
 venv/
