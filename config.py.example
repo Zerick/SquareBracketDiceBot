@@ -1,0 +1,4 @@
+# Configuration settings for SBDB
+TOKEN = 'YOUR TOKEN HERE'
+WEBHOOK_NAME = 'SBDB_Proxy'
+EMBED_COLOR = 0x2b2d31  # Discord Dark Grey

@@ -10,6 +10,13 @@ from whitelist import AUTHORIZED_GUILDS, AUTHORIZED_USERS
 from logger_config import setup_logging
 from gatekeeper import is_authorized, get_context
 
+try:
+    import config
+except ImportError:
+    print("Error: config.py not found.")
+    print("Please copy config.py.example to config.py and add your token.")
+    exit(1)
+
 # Initialize self-cleaning logs (5MB x 5 backups)
 setup_logging()
 
