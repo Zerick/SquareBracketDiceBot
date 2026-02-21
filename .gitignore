@@ -1,0 +1,13 @@
+# Secret stuff
+config.py
+
+# Environments
+venv/
+env/
+
+# Python leftovers
+__pycache__/
+*.pyc
+
+# Logs
+bot_activity.log*
