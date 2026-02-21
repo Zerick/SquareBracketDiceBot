@@ -11,14 +11,7 @@ from whitelist import AUTHORIZED_GUILDS, AUTHORIZED_USERS
 from logger_config import setup_logging
 from gatekeeper import is_authorized, get_context
 
-try:
-    import config
-except ImportError:
-    print("Error: config.py not found.")
-    print("Please copy config.py.example to config.py and add your token.")
-    exit(1)
-
-# Initialize self-cleaning logs (discord noise is silenced in logger_config)
+# Initialize self-cleaning logs (Discord internal noise is silenced here)
 setup_logging()
 
 # Global Verbose Toggle (True = Console shows every roll)
@@ -47,18 +40,18 @@ async def on_message(message):
     # 2. HANDLE DIRECT MESSAGES
     if message.guild is None:
         matches = re.findall(r'\[\[(.*?)\]\]', message.content)
-
         if matches:
-            # SECURITY CHECK: Only whitelisted users can toggle verbose
+            # Verbose Toggle in DMs
             if any(m.lower() == "verbose" for m in matches):
                 if message.author.id in AUTHORIZED_USERS:
                     VERBOSE_MODE = not VERBOSE_MODE
                     status = "ON" if VERBOSE_MODE else "OFF"
                     await message.author.send(f"Terminal Verbose Mode: **{status}**")
                 else:
-                    logging.warning(f"Unauthorized verbose toggle attempt by {message.author} (ID: {message.author.id})")
+                    logging.warning(f"Unauthorized verbose toggle by {message.author} ({message.author.id})")
                 return
 
+            # Help / Menu / About / Install commands for DMs
             if any(m.lower() in ["help", "menu"] for m in matches):
                 await message.author.send(MENU_TEXT)
                 return
@@ -69,7 +62,7 @@ async def on_message(message):
                 await message.author.send(ABOUT_TEXT)
                 return
 
-            # Handle dice rolls in DMs
+            # Handle dice rolls in DMs (Direct text, no embed/webhook needed)
             output_text = message.content
             for m in matches:
                 try:
@@ -79,15 +72,15 @@ async def on_message(message):
                     output_text = output_text.replace(f"[[{m}]]", f"**{score}** ({breakdown})", 1)
                 except:
                     continue
-
             if output_text != message.content:
                 await message.author.send(output_text)
                 return
 
-        await message.author.send(f"Hello! I am the Dice Proxy bot. Here is how you can use me:\n{MENU_TEXT}")
+        await message.author.send(f"Hello! I am the Dice Proxy bot.\n{MENU_TEXT}")
         return
 
-    # 3. SERVER MESSAGES (Standard Gatekeeper/Whitelist check)
+    # 3. SERVER MESSAGES GATEKEEPER
+    # Checks whitelist and the 'cc ' ignore prefix before anything else.
     if not is_authorized(message, AUTHORIZED_GUILDS, AUTHORIZED_USERS):
         return
 
@@ -96,27 +89,37 @@ async def on_message(message):
     if not matches:
         return
 
-    # SECURITY CHECK: Even in a server, only YOU can toggle verbose
+    # SECURITY CHECK: Verbose Toggle (Option 1: DM Confirmation & Message Deletion)
     if any(m.lower() == "verbose" for m in matches):
         if message.author.id in AUTHORIZED_USERS:
             VERBOSE_MODE = not VERBOSE_MODE
             status = "ON" if VERBOSE_MODE else "OFF"
-            await message.channel.send(f"Terminal Verbose Mode: **{status}**")
+            
+            # Delete the public command entry
+            try:
+                await message.delete()
+            except:
+                pass
+            
+            # Send private confirmation to your DM
+            try:
+                await message.author.send(f"Terminal Verbose Mode: **{status}**")
+            except discord.Forbidden:
+                # Fallback if DMs are closed
+                temp = await message.channel.send(f"⚠️ {message.author.mention}: Verbose **{status}**. (Open DMs for silent toggle)")
+                await asyncio.sleep(5)
+                await temp.delete()
         else:
-            logging.warning(f"Unauthorized verbose toggle attempt in {message.guild.name} by {message.author} (ID: {message.author.id})")
+            logging.warning(f"Unauthorized verbose toggle attempt in {message.guild.name} by {message.author}")
         return
 
-    # Help / Menu command
+    # Static Commands
     if any(m.lower() in ["help", "menu"] for m in matches):
         await message.channel.send(MENU_TEXT)
         return
-
-    # Installation command
     if any(m.lower() == "install" for m in matches):
         await message.channel.send(INSTALL_TEXT)
         return
-
-    # About command
     if any(m.lower() == "about" for m in matches):
         await message.channel.send(ABOUT_TEXT)
         return
@@ -125,11 +128,11 @@ async def on_message(message):
     if any(m.lower() == "check_perms" for m in matches):
         perms = message.channel.permissions_for(message.guild.me)
         checks = [
-            ("View Channel", perms.view_channel, "Critical: Bot is blind without this."),
-            ("Send Messages", perms.send_messages, "Critical: Used for Help/Install menus."),
-            ("Manage Messages", perms.manage_messages, "Critical: Required to hide [[brackets]] and Tupper triggers."),
-            ("Manage Webhooks", perms.manage_webhooks, "Critical: Required to post dice results as the user."),
-            ("Embed Links", perms.embed_links, "Recommended: Ensures Help menus format correctly.")
+            ("View Channel", perms.view_channel, "Critical"),
+            ("Send Messages", perms.send_messages, "Critical"),
+            ("Manage Messages", perms.manage_messages, "Critical"),
+            ("Manage Webhooks", perms.manage_webhooks, "Critical"),
+            ("Embed Links", perms.embed_links, "Recommended")
         ]
         output = f"### 🛡️ Permissions Checklist for #{message.channel.name}\n"
         for name, has_perm, note in checks:
@@ -138,35 +141,36 @@ async def on_message(message):
         try:
             await message.author.send(output)
         except discord.Forbidden:
-            await message.channel.send("⚠️ I couldn't DM you! Please open your DMs to receive the report.")
+            await message.channel.send("⚠️ I couldn't DM you the report!")
         return
 
     # Bug Reporting
     if message.content.lower().startswith('[[bug]]'):
         bug_content = message.content[7:].strip()
-        logging.error(f"BUG REPORT from {message.author} (ID: {message.author.id}) {get_context(message)}: {bug_content}")
+        logging.error(f"BUG REPORT from {message.author} {get_context(message)}: {bug_content}")
         await message.channel.send("Bug logged, thank you!")
         return
 
     # Dice Rolling Engine
     output_text = message.content
+    dice_actually_rolled = False
     for m in matches:
         try:
             score, breakdown = roll_dice(m)
+            dice_actually_rolled = True
             
             if VERBOSE_MODE:
-                # Format: Player - Roll String - Result (Breakdown)
                 print(f"{message.author.display_name} - [[{m}]] - {score} ({breakdown})")
             
+            # Using masked links to enable the Hover Tooltip
             tooltip = f"[[{m}]] = {breakdown}"
             replacement = f"[{score}](http://hover.roll '{tooltip}')"
             output_text = output_text.replace(f"[[{m}]]", replacement, 1)
-        except Exception as e:
-            logging.error(f"DICE ERROR from {message.author} (ID: {message.author.id}) {get_context(message)} on [[{m}]]: {e}")
+        except:
             continue
 
     # 5. SERVER WEBHOOK DELIVERY
-    if output_text != message.content:
+    if dice_actually_rolled:
         if active_webhook is None:
             webhooks = await message.channel.webhooks()
             active_webhook = discord.utils.get(webhooks, name=WEBHOOK_NAME)
@@ -179,7 +183,9 @@ async def on_message(message):
             except:
                 pass
 
+            # EMBED_COLOR is set in config.py to match Discord background
             embed = discord.Embed(description=output_text, color=EMBED_COLOR)
+            
             await active_webhook.send(
                 username=message.author.display_name,
                 avatar_url=message.author.display_avatar.url,
@@ -187,7 +193,7 @@ async def on_message(message):
                 wait=True
             )
         except Exception as e:
-            logging.error(f"WEBHOOK ERROR for {message.author.id}: {e}")
+            logging.error(f"WEBHOOK ERROR: {e}")
             active_webhook = None
 
 client.run(TOKEN)
