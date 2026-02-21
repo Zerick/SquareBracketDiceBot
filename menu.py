@@ -21,7 +21,5 @@ MENU_TEXT = """
 `[[4*2d20kl1]]` - Keep lowest 1, then multiply by 4
 
 *Note: Use `[[help]]` to see this again.*
-❓Want to add this bot to another server? Type [[install]] for instructions.
 ❓See also [[about]].
-*Use `[[bug]]` to log the error message entered here.*
 """

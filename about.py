@@ -19,4 +19,8 @@ Born from the idea that dice rolling shouldn't interrupt the flow of roleplay. T
 
 **Get the Code:**
 `git clone https://github.com/Zerick/SquareBracketDiceBot.git`
+
+❓Want to add this bot to another server? Type [[install]] for instructions.
+*Use `[[bug]]` to log the error message entered here.*
+
 """
