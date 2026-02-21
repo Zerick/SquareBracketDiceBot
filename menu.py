@@ -22,5 +22,6 @@ MENU_TEXT = """
 
 *Note: Use `[[help]]` to see this again.*
 ❓Want to add this bot to another server? Type [[install]] for instructions.
+❓See also [[about]].
 *Use `[[bug]]` to log the error message entered here.*
 """

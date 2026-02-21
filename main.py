@@ -5,6 +5,7 @@ import asyncio
 from config import TOKEN, WEBHOOK_NAME, EMBED_COLOR
 from menu import MENU_TEXT
 from installation import INSTALL_TEXT
+from about import ABOUT_TEXT  # <--- Added this import
 from dice_engine import roll_dice
 from whitelist import AUTHORIZED_GUILDS, AUTHORIZED_USERS
 from logger_config import setup_logging
@@ -48,7 +49,7 @@ async def on_message(message):
             logging.info(f"DM Interaction from non-whitelisted user: {message.author} (ID: {message.author.id})")
 
         matches = re.findall(r'\[\[(.*?)\]\]', message.content)
-        
+
         if matches:
             # Handle recognized commands in DMs
             if any(m.lower() in ["help", "menu"] for m in matches):
@@ -57,11 +58,14 @@ async def on_message(message):
             if any(m.lower() == "install" for m in matches):
                 await message.author.send(INSTALL_TEXT)
                 return
+            if any(m.lower() == "about" for m in matches): # <--- Added check for DM
+                await message.author.send(ABOUT_TEXT)
+                return
             if any(m.lower() == "check_perms" for m in matches):
                 await message.author.send("To check permissions, please use this command inside a server channel! I can't check permissions for a private DM.")
                 return
-            
-            # Handle dice rolls in DMs (Simple text reply, no webhooks/deletions)
+
+            # Handle dice rolls in DMs
             output_text = message.content
             for m in matches:
                 try:
@@ -69,17 +73,16 @@ async def on_message(message):
                     output_text = output_text.replace(f"[[{m}]]", f"**{score}** ({breakdown})", 1)
                 except:
                     continue
-            
+
             if output_text != message.content:
                 await message.author.send(output_text)
                 return
 
-        # Default DM Response: If no brackets or recognized strings were found
+        # Default DM Response
         await message.author.send(f"Hello! I am the Dice Proxy bot. Here is how you can use me:\n{MENU_TEXT}")
         return
 
     # 3. SERVER MESSAGES (Standard Gatekeeper/Whitelist check)
-    # The gatekeeper also handles ignoring 'cc ' prompts so we can catch the Tupper webhook later.
     if not is_authorized(message, AUTHORIZED_GUILDS, AUTHORIZED_USERS):
         return
 
@@ -98,6 +101,11 @@ async def on_message(message):
         await message.channel.send(INSTALL_TEXT)
         return
 
+    # About command <--- Added check for Server
+    if any(m.lower() == "about" for m in matches):
+        await message.channel.send(ABOUT_TEXT)
+        return
+
     # Diagnostic Permission command
     if any(m.lower() == "check_perms" for m in matches):
         perms = message.channel.permissions_for(message.guild.me)
@@ -108,12 +116,12 @@ async def on_message(message):
             ("Manage Webhooks", perms.manage_webhooks, "Critical: Required to post dice results as the user."),
             ("Embed Links", perms.embed_links, "Recommended: Ensures Help menus format correctly.")
         ]
-        
+
         output = f"### 🛡️ Permissions Checklist for #{message.channel.name}\n"
         for name, has_perm, note in checks:
             emoji = "✅" if has_perm else "❌"
             output += f"{emoji} **{name}** — {note}\n"
-            
+
         try:
             await message.author.send(output)
         except discord.Forbidden:
@@ -151,11 +159,10 @@ async def on_message(message):
                 active_webhook = await message.channel.create_webhook(name=WEBHOOK_NAME)
 
         try:
-            # Delete original trigger (Human or Tupper webhook)
             try:
                 await message.delete()
             except:
-                pass 
+                pass
 
             embed = discord.Embed(description=output_text, color=EMBED_COLOR)
             await active_webhook.send(
