@@ -1,0 +1,11 @@
+# IDs should be integers, not strings.
+# You can get these by right-clicking a Server or User in Discord
+# (with Developer Mode on) and selecting "Copy ID".
+
+AUTHORIZED_GUILDS = [
+    123456789012345678,  # Whitelisted Server
+]
+
+AUTHORIZED_USERS = [
+    123456789012345678,  # Whitelisted User ID
+]
