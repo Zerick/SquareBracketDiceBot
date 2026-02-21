@@ -95,3 +95,7 @@ def roll_dice(query, mode=None):
     except Exception as e:
         # If it fails, we want to know WHY
         return "Error", f"{e}"
+
+def create_hover_tag(content):
+    # We replace spaces with underscores to keep the tag from breaking
+    return f"<t:0:{content.replace(' ', '_')}>"
