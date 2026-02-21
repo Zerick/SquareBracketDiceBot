@@ -11,24 +11,19 @@ def get_context(message):
     return f"[{guild} | {channel}]"
 
 def is_authorized(message, authorized_guilds, authorized_users):
-    # 1. IGNORE PATTERN FILTER (Tupperbox & Character Prefixes)
+    # 1. IGNORE PATTERN FILTER (Tupperbox & Short Name Prefixes)
     if not message.webhook_id:
-        clean_content = message.content.strip().lower()
+        clean_content = message.content.strip()
         
-        # Pattern A: Two identical letters followed by a space (e.g., 'cc ', 'aa ')
-        if re.match(r'^([a-z])\1\s', clean_content):
+        # Rule A: Two identical letters followed by a space (e.g., 'cc ', 'aa ')
+        if re.match(r'^([a-zA-Z])\1\s', clean_content):
             return False
             
-        # Pattern B: Specific Name Prefixes followed by a colon (e.g., 'amy:', 'kat: ')
-        ignored_names = [
-            "amy", "dawn", "jan", "jen", "kat", "bots", "shay", "so", 
-            "tina", "tro", "zara", "kay", "mori", "elsie", "lexi", 
-            "lexih", "ah", "quynh", "hexi"
-        ]
-        
-        # Matches any name in the list followed immediately by a colon
-        name_pattern = r'^(' + '|'.join(ignored_names) + r'):'
-        if re.match(name_pattern, clean_content):
+        # Rule B: Any 1-5 letter word followed by a colon at the start of the line
+        # ^ starts at beginning
+        # [a-zA-Z]{1,5} matches any letters, length 1 to 5
+        # : matches the colon
+        if re.match(r'^[a-zA-Z]{1,5}:', clean_content):
             return False
 
     # 2. STANDARD WHITELIST CHECK
