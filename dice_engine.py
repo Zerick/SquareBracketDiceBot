@@ -7,18 +7,34 @@ VERSION = "1.2.2-STABLE"
 LAST_UPDATED = "2026-02-21"
 
 def translate_query(query):
+    """
+    Translates shorthand. 
+    Converts both 'dh' and 'dl' into 'kl' and 'kh' respectively.
+    """
     clean_q = query.replace(" ", "").lower()
     clean_q = clean_q.replace('x', '*')
-    clean_q = re.sub(r'd(?=[+-]|kh|kl|dh|dl|[*#tb]|$)', 'd6', clean_q)
-
-    # Drop/Keep logic translation
+    
+    # regex to find: (Count)d(Size)(dh or dl)(Number)
+    # Example: 6d8dl2
     drop_match = re.search(r'(\d+)d(\d+)(d[hl])(\d+)', clean_q)
+    
     if drop_match:
-        total, size, dtype, num = drop_match.groups()
-        num_to_keep = max(0, int(total) - int(num))
-        new_type = 'kl' if dtype == 'dh' else 'kh'
-        return f"{total}d{size}{new_type}{num_to_keep}"
+        count, size, type_code, amount = drop_match.groups()
+        
+        # Calculate how many to keep
+        # If you have 6 dice and drop 2, you keep 4.
+        keep_count = max(0, int(count) - int(amount))
+        
+        # Invert the logic:
+        # 'dh' (Drop High) becomes 'kl' (Keep Low)
+        # 'dl' (Drop Low) becomes 'kh' (Keep High)
+        new_type = "kl" if "h" in type_code else "kh"
+        
+        return f"{count}d{size}{new_type}{keep_count}"
+
     return clean_q
+
+
 
 def force_deterministic(query, mode):
     """
