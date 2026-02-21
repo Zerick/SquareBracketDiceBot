@@ -11,12 +11,24 @@ def get_context(message):
     return f"[{guild} | {channel}]"
 
 def is_authorized(message, authorized_guilds, authorized_users):
-    # 1. TUPPERBOX TRIGGER FILTER
-    # We strip() the content to ensure leading spaces don't bypass the check.
-    # The regex r'^([a-zA-Z])\1+\s' matches any letter repeated 2+ times followed by a space.
+    # 1. IGNORE PATTERN FILTER (Tupperbox & Character Prefixes)
     if not message.webhook_id:
-        clean_content = message.content.strip()
-        if re.match(r'^([a-zA-Z])\1+\s', clean_content):
+        clean_content = message.content.strip().lower()
+        
+        # Pattern A: Two identical letters followed by a space (e.g., 'cc ', 'aa ')
+        if re.match(r'^([a-z])\1\s', clean_content):
+            return False
+            
+        # Pattern B: Specific Name Prefixes followed by a colon (e.g., 'amy:', 'kat: ')
+        ignored_names = [
+            "amy", "dawn", "jan", "jen", "kat", "bots", "shay", "so", 
+            "tina", "tro", "zara", "kay", "mori", "elsie", "lexi", 
+            "lexih", "ah", "quynh", "hexi"
+        ]
+        
+        # Matches any name in the list followed immediately by a colon
+        name_pattern = r'^(' + '|'.join(ignored_names) + r'):'
+        if re.match(name_pattern, clean_content):
             return False
 
     # 2. STANDARD WHITELIST CHECK
