@@ -5,7 +5,7 @@ import asyncio
 from config import TOKEN, WEBHOOK_NAME, EMBED_COLOR
 from menu import MENU_TEXT
 from installation import INSTALL_TEXT
-from about import ABOUT_TEXT  # <--- Added this import
+from about import ABOUT_TEXT
 from dice_engine import roll_dice
 from whitelist import AUTHORIZED_GUILDS, AUTHORIZED_USERS
 from logger_config import setup_logging
@@ -18,8 +18,11 @@ except ImportError:
     print("Please copy config.py.example to config.py and add your token.")
     exit(1)
 
-# Initialize self-cleaning logs (5MB x 5 backups)
+# Initialize self-cleaning logs (discord noise is silenced in logger_config)
 setup_logging()
+
+# Global Verbose Toggle (True = Console shows every roll)
+VERBOSE_MODE = True
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -33,36 +36,37 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    global active_webhook
+    global active_webhook, VERBOSE_MODE
 
     # 1. BASIC FILTERS
-    # Ignore our own bot user and our own proxy webhooks
     if message.author == client.user:
         return
     if message.webhook_id and message.author.name == WEBHOOK_NAME:
         return
 
-    # 2. HANDLE DIRECT MESSAGES (Bypassing whitelist for help/rolls)
+    # 2. HANDLE DIRECT MESSAGES
     if message.guild is None:
-        # Log if a non-whitelisted user is interacting via DM
-        if message.author.id not in AUTHORIZED_USERS:
-            logging.info(f"DM Interaction from non-whitelisted user: {message.author} (ID: {message.author.id})")
-
         matches = re.findall(r'\[\[(.*?)\]\]', message.content)
 
         if matches:
-            # Handle recognized commands in DMs
+            # SECURITY CHECK: Only whitelisted users can toggle verbose
+            if any(m.lower() == "verbose" for m in matches):
+                if message.author.id in AUTHORIZED_USERS:
+                    VERBOSE_MODE = not VERBOSE_MODE
+                    status = "ON" if VERBOSE_MODE else "OFF"
+                    await message.author.send(f"Terminal Verbose Mode: **{status}**")
+                else:
+                    logging.warning(f"Unauthorized verbose toggle attempt by {message.author} (ID: {message.author.id})")
+                return
+
             if any(m.lower() in ["help", "menu"] for m in matches):
                 await message.author.send(MENU_TEXT)
                 return
             if any(m.lower() == "install" for m in matches):
                 await message.author.send(INSTALL_TEXT)
                 return
-            if any(m.lower() == "about" for m in matches): # <--- Added check for DM
+            if any(m.lower() == "about" for m in matches):
                 await message.author.send(ABOUT_TEXT)
-                return
-            if any(m.lower() == "check_perms" for m in matches):
-                await message.author.send("To check permissions, please use this command inside a server channel! I can't check permissions for a private DM.")
                 return
 
             # Handle dice rolls in DMs
@@ -70,6 +74,8 @@ async def on_message(message):
             for m in matches:
                 try:
                     score, breakdown = roll_dice(m)
+                    if VERBOSE_MODE:
+                        print(f"[DM] {message.author.display_name} - [[{m}]] - {score} ({breakdown})")
                     output_text = output_text.replace(f"[[{m}]]", f"**{score}** ({breakdown})", 1)
                 except:
                     continue
@@ -78,7 +84,6 @@ async def on_message(message):
                 await message.author.send(output_text)
                 return
 
-        # Default DM Response
         await message.author.send(f"Hello! I am the Dice Proxy bot. Here is how you can use me:\n{MENU_TEXT}")
         return
 
@@ -91,6 +96,16 @@ async def on_message(message):
     if not matches:
         return
 
+    # SECURITY CHECK: Even in a server, only YOU can toggle verbose
+    if any(m.lower() == "verbose" for m in matches):
+        if message.author.id in AUTHORIZED_USERS:
+            VERBOSE_MODE = not VERBOSE_MODE
+            status = "ON" if VERBOSE_MODE else "OFF"
+            await message.channel.send(f"Terminal Verbose Mode: **{status}**")
+        else:
+            logging.warning(f"Unauthorized verbose toggle attempt in {message.guild.name} by {message.author} (ID: {message.author.id})")
+        return
+
     # Help / Menu command
     if any(m.lower() in ["help", "menu"] for m in matches):
         await message.channel.send(MENU_TEXT)
@@ -101,7 +116,7 @@ async def on_message(message):
         await message.channel.send(INSTALL_TEXT)
         return
 
-    # About command <--- Added check for Server
+    # About command
     if any(m.lower() == "about" for m in matches):
         await message.channel.send(ABOUT_TEXT)
         return
@@ -116,19 +131,14 @@ async def on_message(message):
             ("Manage Webhooks", perms.manage_webhooks, "Critical: Required to post dice results as the user."),
             ("Embed Links", perms.embed_links, "Recommended: Ensures Help menus format correctly.")
         ]
-
         output = f"### 🛡️ Permissions Checklist for #{message.channel.name}\n"
         for name, has_perm, note in checks:
             emoji = "✅" if has_perm else "❌"
             output += f"{emoji} **{name}** — {note}\n"
-
         try:
             await message.author.send(output)
         except discord.Forbidden:
-            try:
-                await message.channel.send("⚠️ I couldn't DM you! Please open your DMs to receive the diagnostic report.")
-            except:
-                pass
+            await message.channel.send("⚠️ I couldn't DM you! Please open your DMs to receive the report.")
         return
 
     # Bug Reporting
@@ -143,6 +153,11 @@ async def on_message(message):
     for m in matches:
         try:
             score, breakdown = roll_dice(m)
+            
+            if VERBOSE_MODE:
+                # Format: Player - Roll String - Result (Breakdown)
+                print(f"{message.author.display_name} - [[{m}]] - {score} ({breakdown})")
+            
             tooltip = f"[[{m}]] = {breakdown}"
             replacement = f"[{score}](http://hover.roll '{tooltip}')"
             output_text = output_text.replace(f"[[{m}]]", replacement, 1)
