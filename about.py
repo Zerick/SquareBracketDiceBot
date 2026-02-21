@@ -13,9 +13,9 @@ Born from the idea that dice rolling shouldn't interrupt the flow of roleplay. T
 • Authorship: Concept by **Zerick**, code assisted by **Gemini (Google AI)**.
 
 **Project Details:**
-• Author: Simonious A.K.A Zerick
+• Author: Simonious A.K.A. Zerick
 • Contact: <simonious@gmail.com>
-• GitHub: https://github.com/Zerick/SquareBracketDiceBot
+• GitHub: <https://github.com/Zerick/SquareBracketDiceBot>
 
 **Get the Code:**
 `git clone https://github.com/Zerick/SquareBracketDiceBot.git`
