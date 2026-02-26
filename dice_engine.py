@@ -67,7 +67,12 @@ def format_breakdown(res):
         dice_part = re.sub(r'~~(.*?)~~', r'(\1)', dice_part)
         dice_part = dice_part.replace('*', '')
         total = getattr(res, 'total', res)
+        # If the dice part is just the total on its own (single die, no pool),
+        # don't repeat it as "9 = 9" — just return the total alone.
+        if dice_part.strip() == str(total):
+            return str(total)
         return f"{dice_part} = {total}"
+    # No dice pool — just return the total on its own
     return str(getattr(res, 'total', res))
 
 def parse_verbose_flag(query):

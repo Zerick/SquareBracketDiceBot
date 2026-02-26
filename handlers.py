@@ -61,9 +61,10 @@ async def handle_dice_logic(message, matches):
                 print(f"{message.author.display_name} - [[{m}]] - {score} ({breakdown})")
             
             if roll_verbose:
-                # Verbose mode: show the full breakdown inline as plain text
+                # Verbose mode: show full breakdown inline AND as a hover tooltip
                 original_query = m.rstrip('v').rstrip('V')
-                replacement = f"**{original_query}** → {breakdown}"
+                tooltip = f"[[{original_query}]] = {breakdown}"
+                replacement = f"**{original_query}** → [{breakdown}](http://hover.roll '{tooltip}')"
             else:
                 # Normal mode: hover tooltip link
                 tooltip = f"[[{m}]] = {breakdown}"
