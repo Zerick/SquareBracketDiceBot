@@ -38,6 +38,10 @@ use t, b, or # for individual results
 Add a v to any roll to see the full breakdown inline:
 [[1d20v]], [[5d6kh3v]], [[10x3d6v]]
 
+**Dice Statistics:**
+[[stats 1d20]] - Show min, max, mean, median and std dev for any expression
+[[stats 5d6kh3+2]] - Works with any valid dice expression
+
 Note: Use [[help]] to see this again
 ❓See also [[about]] ❓
 """

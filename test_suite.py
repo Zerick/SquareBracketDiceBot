@@ -12,6 +12,7 @@
 # Run with: ./test_suite.py
 # =============================================================================
 from dice_engine import roll_dice
+from stats import get_stats
 from version import VERSION
 from test_cases import DICE_TESTS
 
@@ -55,3 +56,41 @@ if failed == 0:
     print("\n✨ ALL SYSTEMS GO: Vibe check 100% passed! ✨")
 else:
     print(f"\n⚠️ WARNING: {failed} tests failed. Check your logic!")
+
+# --- STATS TESTS ---
+print("\n🧪 --- STATS MODULE TESTS --- 🧪")
+print("-" * 40)
+stats_passed = 0
+stats_failed = 0
+
+stats_tests = [
+    ("1d6",      True),   # Valid — should return a dict
+    ("2d6",      True),
+    ("1d20",     True),
+    ("5d6kh3",   True),
+    ("1d20a",    True),
+    ("1d20d",    True),
+    ("monkies",  False),  # Invalid — should return None
+    ("d",        False),
+    ("4d",       False),
+]
+
+for expr, expect_valid in stats_tests:
+    result = get_stats(expr)
+    is_valid = result is not None
+    if is_valid == expect_valid:
+        status = "✅ PASS"
+        stats_passed += 1
+    else:
+        status = "❌ FAIL"
+        stats_failed += 1
+    label = "valid" if expect_valid else "invalid"
+    print(f"{status}  [[stats {expr}]] — expected {label}, got {'valid' if is_valid else 'invalid'}")
+
+print("-" * 40)
+print(f"PASSED: {stats_passed} ✅")
+print(f"FAILED: {stats_failed} ❌")
+if stats_failed == 0:
+    print("\n✨ STATS MODULE: All good! ✨")
+else:
+    print(f"\n⚠️ WARNING: {stats_failed} stats tests failed.")

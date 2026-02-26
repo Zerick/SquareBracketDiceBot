@@ -57,6 +57,10 @@ DICE_TESTS = [
     ("1d20av", "1", "20"),      # Advantage verbose — strips v, still rolls correctly
     ("1d20dv", "1", "20"),      # Disadvantage verbose — strips v, still rolls correctly
 
+    # --- Stats Command ---
+    # Stats uses simulation so we can't test exact values.
+    # These are handled separately in test_suite.py via get_stats() directly.
+
     # --- Shorthand (Explicitly checking our rejection of 'headless' dice) ---
     ("d", "Error", "Error"),
     ("4d", "Error", "Error"),

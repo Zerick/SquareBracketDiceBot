@@ -31,6 +31,7 @@ from about import ABOUT_TEXT
 # From your utility files
 from logger_config import setup_logging
 from gatekeeper import is_authorized, get_context, check_rate_limit
+from stats import get_stats, format_stats
 
 setup_logging()
 
@@ -73,6 +74,19 @@ async def on_message(message):
             await message.author.send(f"🎲 **SBDB** version **{VERSION}** — last updated {LAST_UPDATED}")
             return
 
+        # Stats command in DM
+        if any(m.lower().startswith("stats ") for m in matches):
+            expr = next(m[6:].strip() for m in matches if m.lower().startswith("stats "))
+            stats = get_stats(expr)
+            if stats:
+                elapsed = stats["elapsed"]
+                print(f"{message.author.display_name} - [[stats {expr}]] - completed in {elapsed}s")
+                await message.author.send(format_stats(expr, stats))
+            else:
+                print(f"{message.author.display_name} - [[stats {expr}]] - invalid expression")
+                await message.author.send(f"❌ Could not compute stats for `{expr}` — is that a valid dice expression?")
+            return
+
         # Rate limit check for DM dice rolls
         if not await check_rate_limit(message, AUTHORIZED_USERS):
             return
@@ -109,6 +123,17 @@ async def on_message(message):
     if cmd == "about": await message.channel.send(ABOUT_TEXT + f"\n**Version:** {VERSION} — last updated {LAST_UPDATED}"); return
     if cmd == "version":
         await message.channel.send(f"🎲 **SBDB** version **{VERSION}** — last updated {LAST_UPDATED}")
+        return
+    if cmd.startswith("stats "):
+        expr = cmd[6:].strip()
+        stats = get_stats(expr)
+        if stats:
+            elapsed = stats["elapsed"]
+            print(f"{message.author.display_name} - [[stats {expr}]] - completed in {elapsed}s")
+            await message.channel.send(format_stats(expr, stats))
+        else:
+            print(f"{message.author.display_name} - [[stats {expr}]] - invalid expression")
+            await message.channel.send(f"❌ Could not compute stats for `{expr}` — is that a valid dice expression?")
         return
 
     # Permissions Check

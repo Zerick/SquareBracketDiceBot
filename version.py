@@ -9,5 +9,5 @@
 # Single source of truth for the bot version. Bump this on every release.
 # =============================================================================
 
-VERSION = "1.3.0-STABLE"
+VERSION = "1.4.0-STABLE"
 LAST_UPDATED = "2026-02-25"
