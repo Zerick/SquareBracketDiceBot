@@ -12,14 +12,20 @@
 INSTALL_TEXT = """
 ### 🛠️ SBDB Installation Guide
 
-Use these subcommands for step-by-step help:
-**[[install setup]]** — Clone the repo, set up Python environment and config files
-**[[install bot]]** — Create your Discord bot, set intents, get your token
-**[[install service]]** — Run SBDB as a systemd service so it starts on boot
-**[[install permissions]]** — Set channel permissions and get whitelisted
+**Want to add this bot to your server?**
+* [Click here to invite SBDB to your server](<https://discord.com/oauth2/authorize?client_id=1340503781963599962&permissions=536964096&integration_type=0&scope=bot>)
+* If it doesn't respond, contact **Simonious** at <simonious@gmail.com> to get your server whitelisted
+* Set channel permissions with `[[install permissions]]`
+
+That's it! See `[[help]]` for available commands.
+
+**Want to self-host your own instance?**
+**[[install setup]]** — Start here to clone the repo
+**[[install bot]]** — Create your Discord bot
+**[[install service]]** — Run SBDB as a service
+**[[install permissions]]** — Set permissions
 
 📖 Full documentation: <https://github.com/Zerick/SquareBracketDiceBot>
-❓ Contact: <simonious@gmail.com>
 """
 
 INSTALL_SETUP_TEXT = """

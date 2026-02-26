@@ -42,6 +42,9 @@ A specialized Discord bot designed for seamless, inline dice rolling. Inspired b
 
 ## 🚀 Installation
 
+### Quick Invite
+[Click here to add SBDB to your server](https://discord.com/oauth2/authorize?client_id=1340503781963599962&permissions=536964096&integration_type=0&scope=bot) — then contact [simonious@gmail.com](mailto:simonious@gmail.com) to get your server whitelisted.
+
 ### Prerequisites
 * Python 3.8+
 * Linux host (Raspberry Pi or any 24/7 server)
