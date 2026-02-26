@@ -9,7 +9,6 @@
 # Handles all message processing logic. Manages verbose mode state, processes
 # dice rolls, formats output, sends via webhook, and logs bug reports.
 # =============================================================================
-
 import discord
 import re
 import logging
@@ -64,14 +63,16 @@ async def handle_dice_logic(message, matches):
     """Processes the dice strings and returns the updated text."""
     output_text = message.content
     dice_rolled = False
-    
+
     for m in matches:
         try:
             score, breakdown, roll_verbose = roll_dice(m)
+            if score == "Error":
+                continue
             dice_rolled = True
             if get_verbose():
                 print(f"{message.author.display_name} - [[{m}]] - {score} ({breakdown})")
-            
+
             if roll_verbose:
                 # Verbose mode: show full breakdown inline AND as a hover tooltip
                 original_query = m.rstrip('v').rstrip('V')
@@ -89,11 +90,11 @@ async def handle_dice_logic(message, matches):
     return output_text, dice_rolled
 
 async def send_via_webhook(message, output_text):
-    """FIX: Fetches/Creates webhook per-channel to prevent teleporting."""
+    """Fetches or creates a webhook per-channel and posts the result as the user."""
     try:
         webhooks = await message.channel.webhooks()
         target_webhook = discord.utils.get(webhooks, name=WEBHOOK_NAME)
-        
+
         if not target_webhook:
             target_webhook = await message.channel.create_webhook(name=WEBHOOK_NAME)
 

@@ -11,8 +11,8 @@
 # using deterministic min/max modes to verify correctness without randomness.
 # Run with: ./test_suite.py
 # =============================================================================
-
-from dice_engine import roll_dice, VERSION
+from dice_engine import roll_dice
+from version import VERSION
 from test_cases import DICE_TESTS
 
 # Initialize counters
@@ -26,13 +26,13 @@ print("-" * 40)
 
 for query, expected_min, expected_max in DICE_TESTS:
     print(f"Testing: [[{query}]]")
-    
+
     res_min, _, _v = roll_dice(query, mode="min")
     res_max, _, _v = roll_dice(query, mode="max")
-    
+
     min_pass = str(res_min) == expected_min
     max_pass = str(res_max) == expected_max
-    
+
     if min_pass and max_pass:
         print(f"✅ PASS     [MIN] Got: {res_min}")
         print(f"✅ PASS     [MAX] Got: {res_max}")

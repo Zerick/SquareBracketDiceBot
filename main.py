@@ -10,7 +10,6 @@
 # Entry point. Connects to Discord, routes all incoming messages to the
 # appropriate handler — DM vs server, dice rolls vs commands vs bug reports.
 # =============================================================================
-
 import discord
 import re
 import logging
@@ -19,6 +18,7 @@ import handlers
 
 # From config.py (The basics)
 from config import TOKEN, WEBHOOK_NAME
+from version import VERSION, LAST_UPDATED
 
 # From whitelist.py (The IDs)
 from whitelist import AUTHORIZED_USERS, AUTHORIZED_GUILDS
@@ -30,7 +30,7 @@ from about import ABOUT_TEXT
 
 # From your utility files
 from logger_config import setup_logging
-from gatekeeper import is_authorized, get_context
+from gatekeeper import is_authorized, get_context, check_rate_limit
 
 setup_logging()
 
@@ -51,7 +51,6 @@ async def on_message(message):
 
     # --- BUG REPORT (works everywhere, checked before guild/DM split) ---
     if any(m.lower() == "bug" for m in matches):
-        # Capture any text after the [[bug]] tag
         bug_text_match = re.search(r'\[\[bug\]\]\s*(.*)', message.content, re.IGNORECASE)
         bug_text = bug_text_match.group(1).strip() if bug_text_match else ""
         await handlers.handle_bug_report(message, bug_text)
@@ -62,11 +61,20 @@ async def on_message(message):
         if not matches:
             await message.author.send(f"Hello! I am the Dice Proxy bot.\n{MENU_TEXT}")
             return
-            
+
         if any(m.lower() == "verbose" for m in matches):
             if message.author.id in AUTHORIZED_USERS:
                 status = handlers.toggle_verbose()
                 await message.author.send(f"Terminal Verbose Mode: **{status}**")
+            return
+
+        # Version command in DM
+        if any(m.lower() == "version" for m in matches):
+            await message.author.send(f"🎲 **SBDB** version **{VERSION}** — last updated {LAST_UPDATED}")
+            return
+
+        # Rate limit check for DM dice rolls
+        if not await check_rate_limit(message, AUTHORIZED_USERS):
             return
 
         # Regular DM processing
@@ -90,11 +98,18 @@ async def on_message(message):
             except: pass
         return
 
+    # Rate limit check — applies to all commands and dice rolls
+    if not await check_rate_limit(message, AUTHORIZED_USERS):
+        return
+
     # Static Commands
     cmd = matches[0].lower()
     if cmd in ["help", "menu"]: await message.channel.send(MENU_TEXT); return
     if cmd == "install": await message.channel.send(INSTALL_TEXT); return
-    if cmd == "about": await message.channel.send(ABOUT_TEXT); return
+    if cmd == "about": await message.channel.send(ABOUT_TEXT + f"\n**Version:** {VERSION} — last updated {LAST_UPDATED}"); return
+    if cmd == "version":
+        await message.channel.send(f"🎲 **SBDB** version **{VERSION}** — last updated {LAST_UPDATED}")
+        return
 
     # Permissions Check
     if cmd == "check_perms":
