@@ -6,60 +6,137 @@
 # GitHub:   https://github.com/Zerick/SquareBracketDiceBot
 # License:  MIT
 # -----------------------------------------------------------------------------
-# Contains the installation instructions displayed when a user types [[install]].
+# Contains all installation help text displayed via [[install]] commands.
 # =============================================================================
 
 INSTALL_TEXT = """
-### 🛠️ Bot Installation Checklist
+### 🛠️ SBDB Installation Guide
 
-**[ 1 ] Prerequisites**
+Use these subcommands for step-by-step help:
+**[[install setup]]** — Clone the repo, set up Python environment and config files
+**[[install bot]]** — Create your Discord bot, set intents, get your token
+**[[install service]]** — Run SBDB as a systemd service so it starts on boot
+**[[install permissions]]** — Set channel permissions and get whitelisted
+
+📖 Full documentation: <https://github.com/Zerick/SquareBracketDiceBot>
+❓ Contact: <simonious@gmail.com>
+"""
+
+INSTALL_SETUP_TEXT = """
+### ⚙️ Step 1 — Environment Setup
+
+**Prerequisites**
 * Python 3.8 or higher
-* A Linux host (Raspberry Pi or any 24/7 server works great)
-* A Discord account with access to the [Developer Portal](<https://discord.com/developers/applications>)
+* A Linux host (Raspberry Pi or any 24/7 server)
 
-**[ 2 ] Clone the Repository**
+**Clone the repository**
 ```
 git clone https://github.com/Zerick/SquareBracketDiceBot.git
 cd SquareBracketDiceBot
 ```
 
-**[ 3 ] Set Up the Environment**
+**Create and activate a virtual environment**
 ```
 python3 -m venv venv
 source venv/bin/activate
+```
+
+**Install dependencies**
+```
 pip install -r requirements.txt
 ```
 
-**[ 4 ] Configure the Bot**
-* Copy `config.py.example` to `config.py`
-* Fill in your **Bot Token** in `config.py`
-* Copy `whitelist.py.example` to `whitelist.py`
-* Add your server ID to `AUTHORIZED_GUILDS` and your user ID to `AUTHORIZED_USERS`
+**Set up config files**
+```
+cp config.py.example config.py
+cp whitelist.py.example whitelist.py
+```
+* Edit `config.py` and paste in your Bot Token
+* Edit `whitelist.py` and add your server ID to `AUTHORIZED_GUILDS` and your user ID to `AUTHORIZED_USERS`
 
-**[ 5 ] Create Your Discord Bot**
-* Go to the [Discord Developer Portal](<https://discord.com/developers/applications>)
-* Create a **New Application**, then go to the **Bot** tab
-* Enable **Message Content Intent** under Privileged Gateway Intents
-* Copy your **Bot Token** and paste it into `config.py`
+Next: **[[install bot]]**
+"""
 
-**[ 6 ] Invite the Bot to Your Server**
-* In the Developer Portal go to **OAuth2 -> URL Generator**
+INSTALL_BOT_TEXT = """
+### 🤖 Step 2 — Discord Bot Setup
+
+**Create your bot**
+* Go to <https://discord.com/developers/applications>
+* Click **New Application** and give it a name
+* Go to the **Bot** tab
+* Click **Reset Token**, copy it and paste it into `config.py`
+
+**Enable required intents**
+* On the **Bot** tab scroll down to **Privileged Gateway Intents**
+* Enable **Message Content Intent** ← this is critical, the bot won't work without it
+
+**Invite the bot to your server**
+* Go to **OAuth2 → URL Generator**
 * **Scopes:** `bot`
-* **Permissions:** `Manage Messages`, `Manage Webhooks`, `View Channels`, `Send Messages`, `Embed Links`
-* Use the generated URL to invite the bot to your server
+* **Bot Permissions:** `Manage Messages`, `Manage Webhooks`, `View Channels`, `Send Messages`, `Embed Links`
+* Copy the generated URL and open it in your browser to invite the bot
 
-**[ 7 ] Request Whitelist**
-* **The Lock:** The bot ignores unlisted servers by default
-* **The Key:** Once the bot is in your server, try `[[1d20]]`, then ask **Simonious** to whitelist your server ID
+Next: **[[install service]]**
+"""
 
-**[ 8 ] Run the Bot**
+INSTALL_SERVICE_TEXT = """
+### ⚡ Step 3 — Running as a System Service
+
+Running SBDB as a systemd service means it starts automatically on boot and restarts if it crashes.
+
+**Copy the service file**
 ```
-source venv/bin/activate
-./main.py
+sudo cp sbdb.service /etc/systemd/system/
 ```
 
-**[ 9 ] Channel Permissions**
-* Ensure the bot has **View Channel**, **Send Messages**, **Manage Messages**, **Manage Webhooks**, and **Read Message History** in any channel you want it active in
+**Edit the service file** to match your install path
+```
+sudo nano /etc/systemd/system/sbdb.service
+```
 
-❓Need help? Contact <simonious@gmail.com> or open an issue on GitHub.
+**Enable and start the service**
+```
+sudo systemctl daemon-reload
+sudo systemctl enable sbdb
+sudo systemctl start sbdb
+```
+
+**Check it's running**
+```
+sudo systemctl status sbdb
+```
+
+**View live logs**
+```
+journalctl -u sbdb -f
+```
+
+Next: **[[install permissions]]**
+"""
+
+INSTALL_PERMISSIONS_TEXT = """
+### 🛡️ Step 4 — Permissions and Whitelist
+
+**Channel permissions**
+Ensure the bot has these permissions in every channel you want it active:
+* View Channel
+* Send Messages
+* Manage Messages
+* Manage Webhooks
+* Read Message History
+* Embed Links
+
+**Get whitelisted**
+* The bot ignores all servers not on its whitelist by default
+* Once your bot is running and in your server, try typing `[[1d20]]`
+* If it doesn't respond, your server ID needs to be added to `whitelist.py`
+* Add it yourself under `AUTHORIZED_GUILDS`, or contact **Simonious** if using the hosted version
+
+**Test your setup**
+```
+[[1d20]]        — basic roll
+[[check_perms]] — verify bot permissions in this channel
+[[version]]     — confirm the bot is running and check its version
+[[help]]        — see all available commands
+```
 """

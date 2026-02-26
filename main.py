@@ -25,7 +25,7 @@ from whitelist import AUTHORIZED_USERS, AUTHORIZED_GUILDS
 
 # From their individual files
 from menu import MENU_TEXT
-from installation import INSTALL_TEXT
+from installation import INSTALL_TEXT, INSTALL_SETUP_TEXT, INSTALL_BOT_TEXT, INSTALL_SERVICE_TEXT, INSTALL_PERMISSIONS_TEXT
 from about import ABOUT_TEXT
 
 # From your utility files
@@ -121,6 +121,10 @@ async def on_message(message):
     cmd = matches[0].lower()
     if cmd in ["help", "menu"]: await message.channel.send(MENU_TEXT); return
     if cmd == "install": await message.channel.send(INSTALL_TEXT); return
+    if cmd == "install setup": await message.channel.send(INSTALL_SETUP_TEXT); return
+    if cmd == "install bot": await message.channel.send(INSTALL_BOT_TEXT); return
+    if cmd == "install service": await message.channel.send(INSTALL_SERVICE_TEXT); return
+    if cmd == "install permissions": await message.channel.send(INSTALL_PERMISSIONS_TEXT); return
     if cmd == "about": await message.channel.send(ABOUT_TEXT + f"\n**Version:** {VERSION} — last updated {LAST_UPDATED}"); return
     if cmd == "version":
         await message.channel.send(f"🎲 **SBDB** version **{VERSION}** — last updated {LAST_UPDATED}")

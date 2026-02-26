@@ -1,0 +1,35 @@
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — sbdb.service
+# =============================================================================
+# Systemd service file for SBDB.
+#
+# Installation:
+#   sudo cp sbdb.service /etc/systemd/system/
+#   sudo nano /etc/systemd/system/sbdb.service   <- update paths below
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable sbdb
+#   sudo systemctl start sbdb
+#
+# Useful commands:
+#   sudo systemctl status sbdb      <- check if running
+#   sudo systemctl restart sbdb     <- restart after code changes
+#   journalctl -u sbdb -f           <- live log output
+# =============================================================================
+
+[Unit]
+Description=SquareBracketDiceBot (SBDB)
+After=network.target
+
+[Service]
+Type=simple
+User=sbdb
+WorkingDirectory=/home/sbdb/dicebot
+ExecStart=/home/sbdb/dicebot/venv/bin/python /home/sbdb/dicebot/main.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
