@@ -77,14 +77,15 @@ async def on_message(message):
         # Stats command in DM
         if any(m.lower().startswith("stats ") for m in matches):
             expr = next(m[6:].strip() for m in matches if m.lower().startswith("stats "))
+            calculating_msg = await message.author.send(f"⏳ Calculating stats for `{expr}`...")
             stats = get_stats(expr)
             if stats:
                 elapsed = stats["elapsed"]
                 print(f"{message.author.display_name} - [[stats {expr}]] - completed in {elapsed}s")
-                await message.author.send(format_stats(expr, stats))
+                await calculating_msg.edit(content=format_stats(expr, stats))
             else:
                 print(f"{message.author.display_name} - [[stats {expr}]] - invalid expression")
-                await message.author.send(f"❌ Could not compute stats for `{expr}` — is that a valid dice expression?")
+                await calculating_msg.edit(content=f"❌ Could not compute stats for `{expr}` — is that a valid dice expression?")
             return
 
         # Rate limit check for DM dice rolls
@@ -126,14 +127,15 @@ async def on_message(message):
         return
     if cmd.startswith("stats "):
         expr = cmd[6:].strip()
+        calculating_msg = await message.channel.send(f"⏳ Calculating stats for `{expr}`...")
         stats = get_stats(expr)
         if stats:
             elapsed = stats["elapsed"]
             print(f"{message.author.display_name} - [[stats {expr}]] - completed in {elapsed}s")
-            await message.channel.send(format_stats(expr, stats))
+            await calculating_msg.edit(content=format_stats(expr, stats))
         else:
             print(f"{message.author.display_name} - [[stats {expr}]] - invalid expression")
-            await message.channel.send(f"❌ Could not compute stats for `{expr}` — is that a valid dice expression?")
+            await calculating_msg.edit(content=f"❌ Could not compute stats for `{expr}` — is that a valid dice expression?")
         return
 
     # Permissions Check
