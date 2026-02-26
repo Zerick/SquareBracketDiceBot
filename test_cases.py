@@ -25,8 +25,6 @@ DICE_TESTS = [
     ("d+d", "Error", "Error"),  
 
     # --- Limits & Stress ---
-    # Using join to generate the string "1, 1, 1..." 20 times to match engine output
     ("20x1d1", "20", "20"),
     ("20#1d1", ", ".join(["1"]*20), ", ".join(["1"]*20))
 ]
-

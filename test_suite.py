@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from dice_engine import roll_dice
+from dice_engine import roll_dice, VERSION
 from test_cases import DICE_TESTS
 
 # Initialize counters
@@ -8,17 +8,14 @@ failed = 0
 total = len(DICE_TESTS)
 
 print("🧪 --- SBDB OFFLINE TEST SUITE --- 🧪")
-print("📦 Engine Version: 1.2.7-STABLE")
+print(f"📦 Engine Version: {VERSION}")
 print("-" * 40)
 
 for query, expected_min, expected_max in DICE_TESTS:
     print(f"Testing: [[{query}]]")
     
-    # Run Min test
-    # (Assuming your engine has a way to force min/max, 
-    # or you are checking the logic we built previously)
-    res_min, _ = roll_dice(query, mode="min") 
-    res_max, _ = roll_dice(query, mode="max")
+    res_min, _, _v = roll_dice(query, mode="min")
+    res_max, _, _v = roll_dice(query, mode="max")
     
     min_pass = str(res_min) == expected_min
     max_pass = str(res_max) == expected_max

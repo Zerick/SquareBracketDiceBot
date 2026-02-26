@@ -22,6 +22,6 @@ use t, b, or # for batching multiple rolls with individual results
 [[5d6kh3+2]] - Keep highest 3, then add 2
 [[4*2d20kl1]] - Keep lowest 1, then multiply by 4
 
-Note: Use [[help]] to see this again
+add 'v' to the end of any of the above just before ']]' to get a verbose output
 ❓See also [[about]] ❓
 """

@@ -37,6 +37,14 @@ async def on_message(message):
 
     matches = re.findall(r'\[\[(.*?)\]\]', message.content)
 
+    # --- BUG REPORT (works everywhere, checked before guild/DM split) ---
+    if any(m.lower() == "bug" for m in matches):
+        # Capture any text after the [[bug]] tag
+        bug_text_match = re.search(r'\[\[bug\]\]\s*(.*)', message.content, re.IGNORECASE)
+        bug_text = bug_text_match.group(1).strip() if bug_text_match else ""
+        await handlers.handle_bug_report(message, bug_text)
+        return
+
     # --- DM HANDLING ---
     if message.guild is None:
         if not matches:

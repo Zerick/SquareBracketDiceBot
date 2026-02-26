@@ -10,7 +10,7 @@ Born from the idea that dice rolling shouldn't interrupt the flow of roleplay. T
 **History:**
 • Concepted: Circa 2024
 • Developed: February 2026
-• Authorship: Concept by **Zerick**, code assisted by **Gemini (Google AI)**.
+• Authorship: Concept by **Zerick A.K.A. Simonious**, code assisted by **Gemini (Google AI), follow up work with Claude.ai**.
 
 **Project Details:**
 • Author: Simonious A.K.A. Zerick

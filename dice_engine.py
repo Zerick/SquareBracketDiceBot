@@ -3,16 +3,17 @@ import re
 import d20
 
 # VERSION TRACKER
-VERSION = "1.2.2-STABLE"
-LAST_UPDATED = "2026-02-21"
+VERSION = "1.2.4-STABLE"
+LAST_UPDATED = "2026-02-25"
 
 def translate_query(query):
     """
     Translates shorthand. 
     Converts both 'dh' and 'dl' into 'kl' and 'kh' respectively.
+    Note: 'x' is intentionally NOT converted here — it is handled as a
+    summing batch operator in roll_dice() before this function is called.
     """
     clean_q = query.replace(" ", "").lower()
-    clean_q = clean_q.replace('x', '*')
     
     # regex to find: (Count)d(Size)(dh or dl)(Number)
     # Example: 6d8dl2
@@ -33,7 +34,6 @@ def translate_query(query):
         return f"{count}d{size}{new_type}{keep_count}"
 
     return clean_q
-
 
 
 def force_deterministic(query, mode):
@@ -70,10 +70,46 @@ def format_breakdown(res):
         return f"{dice_part} = {total}"
     return str(getattr(res, 'total', res))
 
+def parse_verbose_flag(query):
+    """
+    Strips a trailing 'v' from a roll query and returns (clean_query, is_verbose).
+    The 'v' must be the very last character and preceded by a digit,
+    so it doesn't accidentally strip the 'v' from something like 'advantage'.
+    Examples:
+        '1d20v'     -> ('1d20', True)
+        '5d6kh3v'   -> ('5d6kh3', True)
+        '10x3d6v'   -> ('10x3d6', True)
+        '1d20'      -> ('1d20', False)
+    """
+    stripped = query.strip()
+    if stripped.endswith('v') and len(stripped) > 1 and stripped[-2].isdigit():
+        return stripped[:-1], True
+    return stripped, False
+
 def roll_dice(query, mode=None):
     query = query.lower().replace(' ', '')
+
+    # Detect and strip the verbose flag before any other processing
+    query, is_verbose = parse_verbose_flag(query)
+
     try:
-        # 1. BATCH HANDLING
+        # 1a. SUMMING BATCH: Nx (e.g. 10x3d6)
+        # Rolls the expression N times and returns the GRAND TOTAL.
+        # Must be checked before translate_query so 'x' isn't consumed.
+        x_match = re.split(r'x', query, maxsplit=1)
+        if len(x_match) == 2 and x_match[0].isdigit():
+            times_str, expr = x_match
+            count = max(1, min(int(times_str), 20))
+            expr = translate_query(expr)
+            if mode:
+                expr = force_deterministic(expr, mode)
+            rolls = [d20.roll(expr) for _ in range(count)]
+            grand_total = sum(getattr(r, 'total', r) for r in rolls)
+            breakdown_str = " | ".join([format_breakdown(r) for r in rolls]) + f" | = {grand_total}"
+            return grand_total, breakdown_str, is_verbose
+
+        # 1b. INDIVIDUAL BATCH: Nt / Nb / N# (e.g. 10t3d6)
+        # Rolls the expression N times and returns EACH RESULT separately.
         batch_match = re.split(r'[#tb]', query, maxsplit=1)
         if len(batch_match) == 2:
             times_str, expr = batch_match
@@ -83,19 +119,15 @@ def roll_dice(query, mode=None):
                 expr = force_deterministic(expr, mode)
             rolls = [d20.roll(expr) for _ in range(count)]
             totals = [str(getattr(r, 'total', r)) for r in rolls]
-            return ", ".join(totals), " | ".join([format_breakdown(r) for r in rolls])
+            return ", ".join(totals), " | ".join([format_breakdown(r) for r in rolls]), is_verbose
 
         # 2. STANDARD ROLLS
         processed_q = translate_query(query)
         if mode:
             processed_q = force_deterministic(processed_q, mode)
         result = d20.roll(processed_q)
-        return getattr(result, 'total', result), format_breakdown(result)
+        return getattr(result, 'total', result), format_breakdown(result), is_verbose
         
     except Exception as e:
         # If it fails, we want to know WHY
-        return "Error", f"{e}"
-
-def create_hover_tag(content):
-    # We replace spaces with underscores to keep the tag from breaking
-    return f"<t:0:{content.replace(' ', '_')}>"
+        return "Error", f"{e}", is_verbose
