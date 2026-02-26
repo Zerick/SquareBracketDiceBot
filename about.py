@@ -1,4 +1,12 @@
-# about.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Contains the about text displayed when a user types [[about]].
+# =============================================================================
+
 
 ABOUT_TEXT = """
 **SquareBracketDiceBot**

@@ -1,3 +1,16 @@
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — gatekeeper.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Filters incoming messages before any processing occurs. Enforces the
+# server/user whitelist and ignores messages that match Tupperbox-style
+# prefixes to prevent interference with other bots.
+# =============================================================================
+
 import time
 import logging
 import re

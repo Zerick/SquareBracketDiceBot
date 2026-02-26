@@ -1,3 +1,15 @@
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — installation.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Contains the installation instructions displayed when a user types [[install]].
+# =============================================================================
+
+
 INSTALL_TEXT = """
 ### 🛠️ Bot Installation Checklist
 

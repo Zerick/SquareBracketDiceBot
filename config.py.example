@@ -1,3 +1,16 @@
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — config.py
+# =============================================================================
+# Project:  SquareBracketDiceBot
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Copy this file to config.py and fill in your values.
+# NEVER commit config.py to version control — it contains your bot token.
+# =============================================================================
+
 # Configuration settings for SBDB
 TOKEN = 'YOUR TOKEN HERE'
 WEBHOOK_NAME = 'SBDB_Proxy'

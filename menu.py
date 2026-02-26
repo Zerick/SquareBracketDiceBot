@@ -1,4 +1,14 @@
-# menu.py
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — menu.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Contains the help/menu text displayed when a user types [[help]] or [[menu]].
+# =============================================================================
+
 MENU_TEXT = """
 🎲 **SBDB Dice Bot Help** 🎲
 

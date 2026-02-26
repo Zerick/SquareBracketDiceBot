@@ -1,4 +1,14 @@
-# test_cases.py
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — test_cases.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Test case definitions for test_suite.py.
+# Format: (Raw Input, Expected Min Total, Expected Max Total)
+# =============================================================================
 
 # Format: (Raw Input, Expected Min Total, Expected Max Total)
 DICE_TESTS = [

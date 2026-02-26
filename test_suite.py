@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — test_suite.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Offline test suite. Runs all cases in test_cases.py against the dice engine
+# using deterministic min/max modes to verify correctness without randomness.
+# Run with: ./test_suite.py
+# =============================================================================
+
 from dice_engine import roll_dice, VERSION
 from test_cases import DICE_TESTS
 

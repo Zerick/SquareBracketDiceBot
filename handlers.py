@@ -1,3 +1,15 @@
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — handlers.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Handles all message processing logic. Manages verbose mode state, processes
+# dice rolls, formats output, sends via webhook, and logs bug reports.
+# =============================================================================
+
 import discord
 import re
 import logging

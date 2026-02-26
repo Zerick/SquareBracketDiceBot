@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — main.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Entry point. Connects to Discord, routes all incoming messages to the
+# appropriate handler — DM vs server, dice rolls vs commands vs bug reports.
+# =============================================================================
+
 import discord
 import re
 import logging

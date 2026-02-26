@@ -1,3 +1,16 @@
+# =============================================================================
+# SquareBracketDiceBot (SBDB) — logger_config.py
+# =============================================================================
+# Author:   Simonious A.K.A. Zerick
+# Contact:  simonious@gmail.com
+# GitHub:   https://github.com/Zerick/SquareBracketDiceBot
+# License:  MIT
+# -----------------------------------------------------------------------------
+# Configures logging for the bot. Rolls are printed to the console at INFO
+# level. Warnings and errors are written to a rotating bot.log file.
+# discord.py internal noise is suppressed.
+# =============================================================================
+
 import logging
 from logging.handlers import RotatingFileHandler
 
