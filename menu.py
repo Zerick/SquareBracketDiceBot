@@ -17,21 +17,27 @@ MENU_TEXT = """
 [[1d20]] - Roll one 20-sided die
 
 **Advanced Modifiers:**
+[[1d20a]] - Advantage (roll twice, keep highest)
+[[1d20d]] - Disadvantage (roll twice, keep lowest)
 [[5d6kh3]] - Keep Highest 3
 [[4d20kl2]] - Keep Lowest 2
 [[6d8dh2]] - Drop Highest 2
 [[7d10dl3]] - Drop Lowest 3
 
 **Multiple Rolls:**
-[[10x3d6]] - Roll 3d6 ten times and produces a single sum result
-[[5x2d20kh1]] - Roll 2d20 five times, keep highest
-[[10t3d6]] - Roll 3d6 ten times and gives individual results
-use t, b, or # for batching multiple rolls with individual results
+[[10x3d6]] - Roll 3d6 ten times and sum the results
+[[5x2d20kh1]] - Roll 2d20 five times keeping highest, sum the results
+[[10t3d6]] - Roll 3d6 ten times and show individual results
+use t, b, or # for individual results
 
 **Combining with Math:**
 [[5d6kh3+2]] - Keep highest 3, then add 2
 [[4*2d20kl1]] - Keep lowest 1, then multiply by 4
 
-add 'v' to the end of any of the above just before ']]' to get a verbose output
+**Verbose Mode:**
+Add a v to any roll to see the full breakdown inline:
+[[1d20v]], [[5d6kh3v]], [[10x3d6v]]
+
+Note: Use [[help]] to see this again
 ❓See also [[about]] ❓
 """

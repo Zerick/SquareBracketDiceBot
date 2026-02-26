@@ -10,7 +10,6 @@
 # Format: (Raw Input, Expected Min Total, Expected Max Total)
 # =============================================================================
 
-# Format: (Raw Input, Expected Min Total, Expected Max Total)
 DICE_TESTS = [
     # --- Basic Functionality ---
     ("2d6", "2", "12"),
@@ -49,6 +48,14 @@ DICE_TESTS = [
     ("4#1d6", "1, 1, 1, 1", "6, 6, 6, 6"),
     ("20t1d6", ", ".join(["1"]*20), ", ".join(["6"]*20)),   # Max batch size
     ("20#1d1", ", ".join(["1"]*20), ", ".join(["1"]*20)),
+
+    # --- Advantage / Disadvantage Shorthand ---
+    ("1d20a", "1", "20"),       # Advantage — translates to 2d20kh1
+    ("1d20d", "1", "20"),       # Disadvantage — translates to 2d20kl1
+    ("1d8a", "1", "8"),         # Advantage on any die size
+    ("1d8d", "1", "8"),         # Disadvantage on any die size
+    ("1d20av", "1", "20"),      # Advantage verbose — strips v, still rolls correctly
+    ("1d20dv", "1", "20"),      # Disadvantage verbose — strips v, still rolls correctly
 
     # --- Shorthand (Explicitly checking our rejection of 'headless' dice) ---
     ("d", "Error", "Error"),

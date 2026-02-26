@@ -1,47 +1,56 @@
+#!/usr/bin/env python3
 # =============================================================================
-# SquareBracketDiceBot (SBDB) — handlers.py
+# SquareBracketDiceBot (SBDB) — dice_engine.py
 # =============================================================================
 # Author:   Simonious A.K.A. Zerick
 # Contact:  simonious@gmail.com
 # GitHub:   https://github.com/Zerick/SquareBracketDiceBot
 # License:  MIT
 # -----------------------------------------------------------------------------
-# Handles all message processing logic. Manages verbose mode state, processes
-# dice rolls, formats output, sends via webhook, and logs bug reports.
+# Core dice rolling engine. Handles query translation, batch rolling,
+# deterministic min/max modes for testing, verbose flag parsing, and
+# result formatting.
 # =============================================================================
-
 import re
 import d20
 
-# VERSION TRACKER
-VERSION = "1.2.4-STABLE"
-LAST_UPDATED = "2026-02-25"
-
 def translate_query(query):
     """
-    Translates shorthand. 
+    Translates shorthand.
     Converts both 'dh' and 'dl' into 'kl' and 'kh' respectively.
+    Converts 'adv' and 'dis' suffixes to keep-highest/lowest notation.
     Note: 'x' is intentionally NOT converted here — it is handled as a
     summing batch operator in roll_dice() before this function is called.
     """
     clean_q = query.replace(" ", "").lower()
-    
+
+    # Advantage/Disadvantage shorthand
+    # 1dXa -> 2dXkh1 (advantage: roll twice, keep highest)
+    # 1dXd -> 2dXkl1 (disadvantage: roll twice, keep lowest)
+    adv_match = re.match(r'^1d(\d+)a$', clean_q)
+    if adv_match:
+        return f"2d{adv_match.group(1)}kh1"
+
+    dis_match = re.match(r'^1d(\d+)d$', clean_q)
+    if dis_match:
+        return f"2d{dis_match.group(1)}kl1"
+
     # regex to find: (Count)d(Size)(dh or dl)(Number)
     # Example: 6d8dl2
     drop_match = re.search(r'(\d+)d(\d+)(d[hl])(\d+)', clean_q)
-    
+
     if drop_match:
         count, size, type_code, amount = drop_match.groups()
-        
+
         # Calculate how many to keep
         # If you have 6 dice and drop 2, you keep 4.
         keep_count = max(0, int(count) - int(amount))
-        
+
         # Invert the logic:
         # 'dh' (Drop High) becomes 'kl' (Keep Low)
         # 'dl' (Drop Low) becomes 'kh' (Keep High)
         new_type = "kl" if "h" in type_code else "kh"
-        
+
         return f"{count}d{size}{new_type}{keep_count}"
 
     return clean_q
@@ -49,29 +58,24 @@ def translate_query(query):
 
 def force_deterministic(query, mode):
     """
-    Replaces dice with 'fixed' dice that d20 treats as individual rolls.
+    Replaces dice with fixed dice that d20 treats as individual rolls.
     '5d6kh3' -> '(1d1+5,1d1+5,1d1+5,1d1+5,1d1+5)kh3'
     """
     def replace_dice(match):
         count = int(match.group(1))
         size = int(match.group(2))
-        
+
         if mode == "min":
-            # 1d1 is always 1
             die_str = "1d1"
         else:
-            # 1d1 + (size-1) is always the max (e.g., 1d1+19 for a d20)
             die_str = f"(1d1+{size-1})"
-            
-        # Join with commas and wrap in parentheses to create a 'set' 
-        # that kh/kl can actually operate on.
+
         return "(" + ",".join([die_str] * count) + ")"
 
     return re.sub(r'(\d+)d(\d+)', replace_dice, query)
 
 def format_breakdown(res):
     raw_str = str(res)
-    # Look for anything inside brackets or parens
     inner_match = re.search(r'[\({](.*?)[\)}]', raw_str)
     if inner_match:
         dice_part = inner_match.group(1)
@@ -83,23 +87,28 @@ def format_breakdown(res):
         if dice_part.strip() == str(total):
             return str(total)
         return f"{dice_part} = {total}"
-    # No dice pool — just return the total on its own
     return str(getattr(res, 'total', res))
 
 def parse_verbose_flag(query):
     """
     Strips a trailing 'v' from a roll query and returns (clean_query, is_verbose).
-    The 'v' must be the very last character and preceded by a digit,
-    so it doesn't accidentally strip the 'v' from something like 'advantage'.
+    Handles three cases:
+      - Preceded by a digit:  '1d20v'   -> ('1d20', True)
+      - Advantage verbose:    '1d20av'  -> ('1d20a', True)
+      - Disadvantage verbose: '1d20dv'  -> ('1d20d', True)
     Examples:
-        '1d20v'     -> ('1d20', True)
-        '5d6kh3v'   -> ('5d6kh3', True)
-        '10x3d6v'   -> ('10x3d6', True)
-        '1d20'      -> ('1d20', False)
+        '1d20v'   -> ('1d20', True)
+        '5d6kh3v' -> ('5d6kh3', True)
+        '10x3d6v' -> ('10x3d6', True)
+        '1d20av'  -> ('1d20a', True)
+        '1d20dv'  -> ('1d20d', True)
+        '1d20'    -> ('1d20', False)
     """
     stripped = query.strip()
-    if stripped.endswith('v') and len(stripped) > 1 and stripped[-2].isdigit():
-        return stripped[:-1], True
+    if stripped.endswith('v') and len(stripped) > 1:
+        preceding = stripped[-2]
+        if preceding.isdigit() or preceding in ('a', 'd'):
+            return stripped[:-1], True
     return stripped, False
 
 def roll_dice(query, mode=None):
@@ -143,7 +152,6 @@ def roll_dice(query, mode=None):
             processed_q = force_deterministic(processed_q, mode)
         result = d20.roll(processed_q)
         return getattr(result, 'total', result), format_breakdown(result), is_verbose
-        
+
     except Exception as e:
-        # If it fails, we want to know WHY
         return "Error", f"{e}", is_verbose
